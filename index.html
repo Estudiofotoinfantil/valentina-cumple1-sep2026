@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Valentina cumple 1 añito 🎪</title>
+<meta name="description" content="Invitación al primer cumpleaños de Valentina — El Circo de las Mil Sonrisas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+/* ============================================================
+   CONFIG VISUAL — paleta circo nena (rosa + dorado + ciruela)
+   ============================================================ */
+:root{
+  --rosa:        #E7527A;
+  --rosa-osc:    #A8365A;
+  --crema:       #FFF3E6;
+  --crema-2:     #FFF9F1;
+  --dorado:      #E8B84B;
+  --dorado-2:    #F6D98C;
+  --noche:       #2E1A47;
+  --noche-2:     #3E2361;
+  --texto:       #3A2233;
+  --sombra: 0 14px 34px rgba(46,26,71,.28);
+  --radio: 22px;
+  --ff-display: 'Fredoka', system-ui, sans-serif;
+  --ff-body: 'Nunito', system-ui, sans-serif;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--crema-2); color:var(--texto);
+  font-family:var(--ff-body); overflow-x:hidden; touch-action:pan-y;
+  max-width:480px; margin-inline:auto; position:relative;
+  box-shadow:0 0 60px rgba(0,0,0,.15);
+}
+img{max-width:100%; display:block;}
+button{font-family:inherit; cursor:pointer; border:none;}
+h1,h2,h3{font-family:var(--ff-display); margin:0;}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+}
+
+.acto{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--ff-display); font-weight:600; font-size:.72rem;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--rosa);
+  background:var(--crema); border:1.5px dashed var(--dorado);
+  padding:6px 14px; border-radius:999px; margin-bottom:14px;
+}
+.acto::before{content:"🎪"; font-size:.9rem;}
+
+.banderines{ display:flex; width:100%; height:26px; }
+.banderines span{ flex:1; height:100%; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.banderines span:nth-child(4n+1){background:var(--rosa);}
+.banderines span:nth-child(4n+2){background:var(--dorado);}
+.banderines span:nth-child(4n+3){background:var(--noche-2);}
+.banderines span:nth-child(4n){background:var(--crema);}
+
+/* ============================================================
+   1. INTRO — carpa que se abre
+   ============================================================ */
+#intro{
+  position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center;
+  background:var(--noche); overflow:hidden;
+}
+.telon{
+  position:absolute; top:0; bottom:0; width:52%; z-index:2;
+  background: repeating-linear-gradient(90deg, var(--rosa) 0 26px, var(--rosa-osc) 26px 52px);
+  box-shadow: 0 0 40px rgba(0,0,0,.5) inset;
+  transition: transform 1.1s cubic-bezier(.77,0,.18,1);
+}
+.telon::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(255,255,255,.18), transparent 30%); }
+.telon.izq{left:0; border-right:4px solid var(--dorado);}
+.telon.der{right:0; border-left:4px solid var(--dorado);}
+#intro.abierta .telon.izq{transform:translateX(-102%);}
+#intro.abierta .telon.der{transform:translateX(102%);}
+
+.intro-contenido{ position:relative; z-index:3; text-align:center; padding:0 30px; color:var(--crema-2); }
+.intro-contenido .top{
+  font-family:var(--ff-display); font-size:.85rem; letter-spacing:.3em; text-transform:uppercase;
+  color:var(--dorado-2); margin-bottom:10px; opacity:0; animation:aparecer .8s .3s ease forwards;
+}
+.intro-contenido h1{
+  font-size:2.6rem; line-height:1.05; color:var(--crema-2);
+  text-shadow:0 4px 0 var(--rosa), 0 8px 18px rgba(0,0,0,.4);
+  opacity:0; animation:aparecer .9s .55s ease forwards;
+}
+.intro-contenido .sub{
+  font-family:var(--ff-body); font-weight:700; font-size:1.05rem; margin-top:10px; color:var(--dorado-2);
+  opacity:0; animation:aparecer .9s .8s ease forwards;
+}
+@keyframes aparecer{ to{opacity:1; transform:none;} from{opacity:0; transform:translateY(12px);} }
+
+#btn-abrir{
+  margin-top:34px; background:var(--dorado); color:var(--noche);
+  font-family:var(--ff-display); font-weight:600; font-size:1.02rem;
+  padding:15px 30px; border-radius:999px; box-shadow:var(--sombra);
+  opacity:0; animation:aparecer .9s 1.1s ease forwards, pulso 2.2s 2.2s ease-in-out infinite;
+  border:3px solid var(--crema-2);
+}
+@keyframes pulso{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.045);} }
+.spot{
+  position:absolute; width:520px; height:520px; border-radius:50%; z-index:1;
+  background:radial-gradient(circle, rgba(246,217,140,.22), transparent 60%);
+  animation:girar 9s linear infinite;
+}
+@keyframes girar{ from{transform:rotate(0);} to{transform:rotate(360deg);} }
+
+/* ============================================================
+   2. HERO — foto real de Valentina
+   ============================================================ */
+#hero{ position:relative; height:100svh; min-height:560px; overflow:hidden; display:flex; align-items:flex-end; }
+#hero .hero-img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 30%;
+  transform:scale(1.12); transition:transform 3s ease-out, opacity .5s ease;
+  opacity:0; background:linear-gradient(120deg, var(--noche-2) 25%, #4a2a72 37%, var(--noche-2) 63%);
+  background-size:400% 100%; animation:shimmer 1.6s ease-in-out infinite;
+}
+#hero.on .hero-img{transform:scale(1);}
+#hero .hero-img.cargada{ opacity:1; animation:none; background:none; }
+@keyframes shimmer{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
+#hero::before{
+  content:""; position:absolute; inset:0; z-index:1;
+  background:linear-gradient(180deg, rgba(46,26,71,.15) 0%, rgba(46,26,71,.4) 55%, rgba(46,26,71,.94) 100%);
+}
+.hero-carpa-top{
+  position:absolute; top:0; left:0; right:0; height:46px; z-index:2;
+  background:repeating-linear-gradient(90deg, var(--rosa) 0 24px, var(--crema) 24px 48px);
+  clip-path: polygon(0 0,100% 0,100% 60%,95% 100%,90% 60%,85% 100%,80% 60%,75% 100%,70% 60%,65% 100%,60% 60%,55% 100%,50% 60%,45% 100%,40% 60%,35% 100%,30% 60%,25% 100%,20% 60%,15% 100%,10% 60%,5% 100%,0 60%);
+}
+.hero-texto{ position:relative; z-index:2; padding:0 26px 34px; color:var(--crema-2); width:100%; }
+.hero-texto .top{
+  font-family:var(--ff-display); font-size:.78rem; letter-spacing:.24em; text-transform:uppercase;
+  color:var(--dorado-2); margin-bottom:8px;
+}
+.hero-texto h2{ font-size:2.5rem; line-height:1.05; text-shadow:0 6px 20px rgba(0,0,0,.45);}
+.hero-texto h2 em{ font-style:normal; color:var(--dorado-2);}
+.hero-fecha-chip{
+  display:inline-flex; gap:10px; align-items:center; margin-top:16px;
+  background:rgba(255,243,230,.14); backdrop-filter:blur(6px);
+  border:1px solid rgba(246,217,140,.5); border-radius:999px; padding:9px 16px;
+  font-weight:700; font-size:.92rem;
+}
+.scroll-cue{ position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:2; color:var(--dorado-2); font-size:1.3rem; animation:rebote 1.6s ease-in-out infinite; }
+@keyframes rebote{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,8px);}}
+
+section{ padding:52px 24px 44px; position:relative; }
+.bg-crema{background:var(--crema-2);}
+.bg-noche{background:var(--noche); color:var(--crema-2);}
+.bg-noche .acto{background:var(--noche-2); color:var(--dorado-2); border-color:var(--dorado);}
+h2.titulo-sec{ font-size:1.9rem; margin-bottom:6px; }
+.bajada{ font-family:var(--ff-body); font-weight:600; opacity:.85; margin-bottom:26px; max-width:32ch;}
+
+/* ============================================================
+   3. COUNTDOWN
+   ============================================================ */
+#countdown{ text-align:center; }
+.cd-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:8px;}
+.cd-item{
+  background:linear-gradient(160deg, var(--rosa), var(--rosa-osc));
+  border-radius:18px; padding:16px 4px; box-shadow:var(--sombra);
+  border:2px solid var(--dorado);
+}
+.cd-item .num{ font-family:var(--ff-display); font-size:2rem; color:var(--crema-2); font-variant-numeric:tabular-nums;}
+.cd-item .lbl{ font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dorado-2); font-weight:700; margin-top:2px;}
+#cd-finish{ display:none; font-family:var(--ff-display); font-size:1.4rem; color:var(--dorado-2); margin-top:10px;}
+
+/* ============================================================
+   4. GALERÍA — fotos reales
+   ============================================================ */
+.galeria-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:6px; }
+.galeria-grid a{ display:block; overflow:hidden; border-radius:16px; box-shadow:var(--sombra); position:relative; }
+.galeria-grid img{
+  width:100%; height:100%; object-fit:cover; aspect-ratio:1/1.05;
+  transition:transform .5s ease, opacity .4s ease; opacity:0;
+  background:linear-gradient(120deg, #f6dbe4 25%, #fff0f4 37%, #f6dbe4 63%);
+  background-size:400% 100%; animation:shimmer2 1.6s ease-in-out infinite;
+}
+.galeria-grid img.cargada{ opacity:1; animation:none; background:none; }
+@keyframes shimmer2{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
+.galeria-grid a:active img{ transform:scale(1.06); }
+.galeria-grid a:first-child{ grid-column:1/3; aspect-ratio:16/11; }
+.galeria-grid a:first-child img{ aspect-ratio:16/11; }
+.galeria-grid a::after{
+  content:"🔍"; position:absolute; right:8px; bottom:8px; background:rgba(46,26,71,.55);
+  color:#fff; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.85rem;
+}
+
+#lightbox{
+  position:fixed; inset:0; background:rgba(20,10,32,.96); z-index:900;
+  display:none; align-items:center; justify-content:center; flex-direction:column;
+}
+#lightbox.on{display:flex;}
+#lightbox img{ max-width:92vw; max-height:72vh; border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.6); touch-action:pan-y;}
+.lb-close{ position:absolute; top:18px; right:18px; background:var(--dorado); color:var(--noche); width:38px; height:38px; border-radius:50%; font-size:1.1rem; font-weight:700;}
+.lb-nav{ display:flex; gap:40px; margin-top:20px; }
+.lb-nav button{ background:none; color:var(--dorado-2); font-size:2rem; }
+.lb-count{ color:var(--crema); opacity:.6; font-size:.8rem; margin-top:8px; font-weight:700; letter-spacing:.1em;}
+
+/* ============================================================
+   5. DETALLES
+   ============================================================ */
+.detalle-cards{ display:grid; gap:14px; margin-top:6px; }
+.detalle-card{
+  background:var(--crema-2); border:2px solid var(--dorado); border-radius:18px;
+  padding:18px 18px; display:flex; gap:14px; align-items:flex-start; box-shadow:var(--sombra);
+  transition:transform .25s ease;
+}
+.detalle-card:active{ transform:scale(.97); }
+.detalle-card .ico{
+  font-size:1.6rem; background:var(--rosa); color:#fff; width:48px; height:48px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center; flex:none;
+  animation:flotar 3s ease-in-out infinite;
+}
+.detalle-card:nth-child(2) .ico{animation-delay:.3s; background:var(--noche-2);}
+.detalle-card:nth-child(3) .ico{animation-delay:.6s;}
+.detalle-card:nth-child(4) .ico{animation-delay:.9s; background:var(--noche-2);}
+@keyframes flotar{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-4px) rotate(3deg);}}
+.detalle-card h3{ font-size:1rem; margin-bottom:3px; color:var(--rosa-osc);}
+.detalle-card p{ margin:0; font-weight:700; font-size:.92rem; line-height:1.35;}
+
+/* ============================================================
+   6. MAPA
+   ============================================================ */
+#mapa{ height:230px; border-radius:20px; overflow:hidden; box-shadow:var(--sombra); border:3px solid var(--dorado); margin-top:8px;}
+.lugar-nombre{ font-family:var(--ff-display); font-size:1.15rem; margin-top:16px; color:var(--dorado-2);}
+.lugar-dir{ font-weight:700; opacity:.85; margin-top:2px;}
+.como-llegar{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:16px; }
+.como-llegar a{
+  text-align:center; background:var(--crema-2); color:var(--noche); text-decoration:none;
+  font-weight:800; font-size:.78rem; padding:12px 4px; border-radius:12px; box-shadow:var(--sombra);
+}
+
+/* ============================================================
+   7. RSVP
+   ============================================================ */
+#rsvp{ background:linear-gradient(180deg, var(--crema-2), var(--crema)); }
+.ticket{
+  background:var(--crema-2); border-radius:20px; padding:22px 20px 24px; box-shadow:var(--sombra);
+  border:2px dashed var(--rosa); position:relative;
+}
+.ticket::before, .ticket::after{
+  content:""; position:absolute; width:22px; height:22px; background:var(--crema-2); border-radius:50%;
+  top:50%; transform:translateY(-50%); box-shadow:inset 0 0 0 2px var(--rosa);
+}
+.ticket::before{ left:-13px;} .ticket::after{ right:-13px;}
+.campo{ margin-bottom:16px; }
+.campo label{ display:block; font-weight:800; font-size:.82rem; margin-bottom:6px; color:var(--rosa-osc);}
+.campo input[type=text], .campo textarea{
+  width:100%; border:2px solid var(--dorado); border-radius:12px; padding:12px 14px;
+  font-family:var(--ff-body); font-weight:700; font-size:.95rem; background:#fff; color:var(--texto);
+}
+.campo textarea{ resize:vertical; min-height:64px; }
+.campo input:focus, .campo textarea:focus{ outline:3px solid var(--rosa); outline-offset:1px; }
+.contador-row{ display:flex; justify-content:space-between; align-items:center; }
+.stepper{ display:flex; align-items:center; gap:12px; }
+.stepper button{
+  width:34px; height:34px; border-radius:50%; background:var(--rosa); color:#fff; font-size:1.2rem; font-weight:800;
+}
+.stepper button:active{ background:var(--rosa-osc); }
+.stepper span{ font-family:var(--ff-display); font-size:1.15rem; min-width:20px; text-align:center; }
+#btn-confirmar{
+  width:100%; margin-top:6px; background:var(--dorado); color:var(--noche);
+  font-family:var(--ff-display); font-weight:600; font-size:1.05rem; padding:16px; border-radius:14px;
+  box-shadow:var(--sombra); display:flex; align-items:center; justify-content:center; gap:8px;
+}
+#rsvp-ok{
+  display:none; margin-top:14px; text-align:center; background:var(--noche); color:var(--dorado-2);
+  border-radius:14px; padding:16px; font-weight:800;
+}
+
+/* ============================================================
+   8. SUBÍ TUS FOTOS (invitados)
+   ============================================================ */
+.fw-upload-btn{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:14px; border-radius:14px;
+  border:2px dashed var(--rosa); color:var(--rosa-osc);
+  background:rgba(231,82,122,.06); font-family:var(--ff-display); font-weight:600;
+  font-size:.92rem; cursor:pointer; transition:background .2s;
+}
+.fw-upload-btn:active{ background:rgba(231,82,122,.14); }
+.fw-hint{ font-size:.72rem; color:var(--texto); opacity:.6; text-align:center; margin-top:6px; font-weight:700;}
+
+.fw-preview-wrap{ margin-top:14px; }
+.fw-preview-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.fw-preview-item{ position:relative; border-radius:12px; overflow:hidden; border:2px solid var(--dorado); }
+.fw-preview-item img, .fw-preview-item video{ width:100%; aspect-ratio:1; object-fit:cover; display:block; background:#000; }
+.fw-preview-remove{
+  position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%;
+  background:var(--noche); color:#fff; font-size:13px; display:flex; align-items:center; justify-content:center;
+}
+.fw-video-badge{
+  position:absolute; bottom:4px; left:4px; background:var(--noche); color:var(--dorado-2);
+  font-size:8px; letter-spacing:1px; text-transform:uppercase; font-weight:800;
+  padding:2px 6px; border-radius:999px;
+}
+
+#fw-submit-btn{
+  width:100%; margin-top:16px; background:var(--dorado); color:var(--noche);
+  font-family:var(--ff-display); font-weight:600; font-size:1rem; padding:14px; border-radius:14px;
+  box-shadow:var(--sombra); display:flex; align-items:center; justify-content:center; gap:8px;
+}
+#fw-submit-btn:disabled{ opacity:.6; }
+
+.fw-status{ display:none; text-align:center; padding:8px 4px 2px; }
+.fw-status.show{ display:block; }
+#fw-status-icon{ font-size:2.4rem; display:block; margin-bottom:6px;}
+#fw-status-msg{ font-family:var(--ff-display); font-size:1.15rem; color:var(--rosa-osc); }
+.fw-status-sub{ font-size:.82rem; opacity:.7; margin-top:6px; font-weight:700;}
+
+.fw-live-wrap{ margin-top:30px; }
+.fw-live-head{ display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.fw-live-head p{ font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dorado-2); font-weight:800; margin:0;}
+.fw-live-dot{ width:8px; height:8px; border-radius:50%; background:var(--rosa); flex:none; animation:vivoPulso 1.8s ease-in-out infinite;}
+@keyframes vivoPulso{ 0%{box-shadow:0 0 0 0 rgba(231,82,122,.5);} 70%{box-shadow:0 0 0 7px rgba(231,82,122,0);} 100%{box-shadow:0 0 0 0 rgba(231,82,122,0);} }
+.fw-live-empty{ font-size:.82rem; opacity:.75; font-style:italic; text-align:center; padding:6px 0; font-weight:700; color:var(--crema-2);}
+.fw-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.fw-grid-item{ position:relative; border-radius:12px; overflow:hidden; animation:aparecer .5s ease both; }
+.fw-grid-item img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; border-radius:12px; border:2px solid var(--dorado); cursor:pointer; box-shadow:var(--sombra); }
+.fw-play-badge{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:30px; height:30px; border-radius:50%; background:rgba(46,26,71,.6); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:12px; pointer-events:none;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{ background:var(--noche); color:var(--crema-2); text-align:center; padding:44px 26px 34px; }
+footer .frase{ font-family:var(--ff-display); font-size:1.3rem; color:var(--dorado-2); line-height:1.35; margin-bottom:10px;}
+footer .firma{ font-weight:700; opacity:.75; margin-top:18px; font-size:.78rem;}
+footer .creditos{ margin-top:22px; padding-top:18px; border-top:1px solid rgba(246,217,140,.25); display:flex; flex-direction:column; gap:7px; }
+footer .creditos a{ color:var(--dorado-2); text-decoration:none; font-weight:700; font-size:.78rem; letter-spacing:.02em; }
+footer .creditos a span.lbl{ opacity:.55; font-weight:600; }
+
+#audio-toggle{
+  position:fixed; right:16px; bottom:16px; z-index:500; width:50px; height:50px; border-radius:50%;
+  background:var(--dorado); color:var(--noche); font-size:1.25rem; box-shadow:var(--sombra);
+  display:flex; align-items:center; justify-content:center;
+}
+
+.confeti{ position:fixed; top:-10px; z-index:950; border-radius:2px; pointer-events:none; animation:caer linear forwards; }
+@keyframes caer{ to{ transform:translateY(105vh) rotate(540deg); opacity:.9; } }
+
+.reveal{ opacity:0; transform:translateY(26px); transition:opacity .7s ease, transform .7s ease; }
+.reveal.on{ opacity:1; transform:none; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     1. INTRO
+     ============================================================ -->
+<div id="intro">
+  <div class="spot"></div>
+  <div class="telon izq"></div>
+  <div class="telon der"></div>
+  <div class="intro-contenido">
+    <div class="top">El Circo de las Mil Sonrisas presenta</div>
+    <h1>Valentina 🎀</h1>
+    <div class="sub">¡Cumple su primer añito!</div>
+    <button id="btn-abrir">Abrir la carpa</button>
+  </div>
+</div>
+
+<audio id="audio-fondo" loop preload="none">
+  <source src="" type="audio/mpeg">
+</audio>
+<button id="audio-toggle" aria-label="Pausar o reanudar música" title="Música">🔊</button>
+
+<!-- ============================================================
+     2. HERO
+     ============================================================ -->
+<section id="hero">
+  <div class="hero-carpa-top"></div>
+  <img class="hero-img" src="https://i.ibb.co/LhQFRv1P/DSC0177.jpg" alt="Valentina" loading="eager" fetchpriority="high" decoding="async" onload="this.classList.add('cargada')">
+  <div class="hero-texto">
+    <div class="top">1er cumpleaños · Función especial</div>
+    <h2>Valentina se sube<br>al <em>carrusel</em> 🎠</h2>
+    <div class="hero-fecha-chip" id="chip-fecha">📅 Completá la fecha</div>
+  </div>
+  <div class="scroll-cue">⌄</div>
+</section>
+
+<div class="banderines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<!-- ============================================================
+     3. COUNTDOWN
+     ============================================================ -->
+<section id="countdown" class="bg-noche reveal">
+  <span class="acto">Acto II · La cuenta regresiva</span>
+  <h2 class="titulo-sec">Faltan…</h2>
+  <p class="bajada" style="margin-inline:auto;">para que se prendan las luces de la carpa más dulce del año.</p>
+  <div class="cd-grid">
+    <div class="cd-item"><div class="num" id="cd-d">00</div><div class="lbl">Días</div></div>
+    <div class="cd-item"><div class="num" id="cd-h">00</div><div class="lbl">Horas</div></div>
+    <div class="cd-item"><div class="num" id="cd-m">00</div><div class="lbl">Min</div></div>
+    <div class="cd-item"><div class="num" id="cd-s">00</div><div class="lbl">Seg</div></div>
+  </div>
+  <div id="cd-finish">🎉 ¡Llegó el gran día de Valentina! 🎉</div>
+</section>
+
+<div class="banderines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<!-- ============================================================
+     4. GALERÍA
+     ============================================================ -->
+<section id="galeria" class="bg-crema reveal">
+  <span class="acto">Acto III · Álbum de pista</span>
+  <h2 class="titulo-sec">Momentos de Valentina</h2>
+  <p class="bajada">Una probadita de todo lo lindo que se viene.</p>
+  <div class="galeria-grid" id="galeria-grid"></div>
+</section>
+
+<div id="lightbox">
+  <button class="lb-close" id="lb-close" aria-label="Cerrar">✕</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lb-nav">
+    <button id="lb-prev" aria-label="Anterior">‹</button>
+    <button id="lb-next" aria-label="Siguiente">›</button>
+  </div>
+  <div class="lb-count" id="lb-count"></div>
+</div>
+
+<!-- ============================================================
+     4.5 SUBÍ TUS FOTOS Y VIDEOS
+     ============================================================ -->
+<section id="subi-fotos" class="bg-noche reveal">
+  <span class="acto">Acto IV · Sumá tus recuerdos</span>
+  <h2 class="titulo-sec">Compartí tus fotos y videos</h2>
+  <p class="bajada">Sacá una foto o grabá un video cortito en la fiesta, y sumalo al álbum del recuerdo 🎪</p>
+
+  <!--
+    CONFIGURACIÓN POR EVENTO — solo estos dos data-atributos cambian
+    entre invitaciones. La URL del script es la misma para todos los
+    eventos; el event-id es único por cliente.
+  -->
+  <div class="ticket" id="fotoWidget"
+       data-event-id="valentina-cumple1-sep2026"
+       data-script-url="https://script.google.com/macros/s/AKfycbwX07istH4rSQg1pkn9HRuwzVjB1Znu9LQdgazOPw9Sv-mRcWp2M_y-MY-aiRU2zGc/exec">
+
+    <div id="fw-form">
+      <div class="campo">
+        <label for="fw-guest-name">Tu nombre (opcional)</label>
+        <input type="text" id="fw-guest-name" placeholder="¿Quién sos?">
+      </div>
+
+      <label class="fw-upload-btn" for="fw-file-input">
+        <input type="file" id="fw-file-input" accept="image/*,video/*" multiple hidden>
+        <span id="fw-upload-text">🎪 &nbsp; Elegir fotos o videos</span>
+      </label>
+      <p class="fw-hint">Hasta 10 a la vez · los videos cortos (~30MB) suben mejor</p>
+
+      <div class="fw-preview-wrap" id="fw-preview-wrap" style="display:none;">
+        <div class="fw-preview-grid" id="fw-preview-grid"></div>
+      </div>
+
+      <button id="fw-submit-btn" style="display:none;">🎪 &nbsp; Subir</button>
+    </div>
+
+    <div id="fw-status" class="fw-status">
+      <span id="fw-status-icon">🎪</span>
+      <div id="fw-status-msg">¡Gracias por compartirlo!</div>
+      <div class="fw-status-sub">Ya se sumó al álbum de recuerdos de Valentina 💕</div>
+    </div>
+  </div>
+
+  <div class="fw-live-wrap">
+    <div class="fw-live-head">
+      <span class="fw-live-dot"></span>
+      <p>En vivo · lo que se va compartiendo</p>
+    </div>
+    <p id="fw-live-empty" class="fw-live-empty">Todavía no hay nada compartido. ¡Sé el primero! 🎪</p>
+    <div class="fw-grid" id="fw-live-grid"></div>
+  </div>
+</section>
+
+<div class="banderines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<!-- ============================================================
+     5. DETALLES
+     ============================================================ -->
+<section id="detalles" class="bg-crema reveal">
+  <span class="acto">Acto V · Datos del show</span>
+  <h2 class="titulo-sec">Toda la info</h2>
+  <div class="detalle-cards">
+    <div class="detalle-card"><div class="ico">📅</div><div><h3>Fecha</h3><p id="det-fecha">A confirmar</p></div></div>
+    <div class="detalle-card"><div class="ico">🕔</div><div><h3>Horario</h3><p id="det-hora">A confirmar</p></div></div>
+    <div class="detalle-card"><div class="ico">📍</div><div><h3>Lugar</h3><p>Estudio de fotos — López May 2946, Gregorio de Laferrère, La Matanza, Buenos Aires (CP 1757)</p></div></div>
+    <div class="detalle-card"><div class="ico">🎀</div><div><h3>Onda</h3><p>Vení con tu look más lindo, ¡acá el circo se pinta de rosa!</p></div></div>
+  </div>
+</section>
+
+<div class="banderines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<!-- ============================================================
+     6. MAPA
+     ============================================================ -->
+<section id="ubicacion" class="bg-noche reveal">
+  <span class="acto">Acto VI · Cómo llegar</span>
+  <h2 class="titulo-sec">Te esperamos acá</h2>
+  <div id="mapa"></div>
+  <div class="lugar-nombre">Nuestro Estudio</div>
+  <div class="lugar-dir">López May 2946, Gregorio de Laferrère, La Matanza, Buenos Aires · CP 1757</div>
+  <div class="como-llegar">
+    <a id="lnk-google" href="#" target="_blank" rel="noopener">🗺️<br>Google Maps</a>
+    <a id="lnk-waze" href="#" target="_blank" rel="noopener">🚗<br>Waze</a>
+    <a id="lnk-apple" href="#" target="_blank" rel="noopener">📍<br>Apple Maps</a>
+  </div>
+</section>
+
+<div class="banderines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<!-- ============================================================
+     7. RSVP
+     ============================================================ -->
+<section id="rsvp" class="reveal">
+  <span class="acto">Acto VII · Confirmá tu lugar</span>
+  <h2 class="titulo-sec">¿Vas a venir?</h2>
+  <p class="bajada">Decinos que sí para guardarte tu butaca en primera fila 🎟️</p>
+
+  <div class="ticket">
+    <div class="campo">
+      <label for="f-nombre">Tu nombre</label>
+      <input type="text" id="f-nombre" placeholder="¿Quién confirma?">
+    </div>
+    <div class="campo">
+      <label>Adultos</label>
+      <div class="contador-row">
+        <span>¿Cuántos vienen?</span>
+        <div class="stepper">
+          <button type="button" data-target="adultos" data-op="-">−</button>
+          <span id="adultos">1</span>
+          <button type="button" data-target="adultos" data-op="+">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="campo">
+      <label>Niños</label>
+      <div class="contador-row">
+        <span>¿Y peques?</span>
+        <div class="stepper">
+          <button type="button" data-target="ninos" data-op="-">−</button>
+          <span id="ninos">0</span>
+          <button type="button" data-target="ninos" data-op="+">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="campo">
+      <label for="f-msg">Mensaje (opcional)</label>
+      <textarea id="f-msg" placeholder="Un saludito para Valentina…"></textarea>
+    </div>
+    <button id="btn-confirmar">Confirmar por WhatsApp 🎪</button>
+    <div id="rsvp-ok">¡Gracias! Ya avisamos que venís. Nos vemos bajo la carpa 🎉</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="frase">"Un añito de risas,<br>toda una vida de amor" 🎀</div>
+  <div>Con todo nuestro cariño,<br>la familia de Valentina</div>
+  <div class="firma">— El Circo de las Mil Sonrisas —</div>
+  <div class="creditos">
+    <a href="https://instagram.com/estudio_fotoinfantil" target="_blank" rel="noopener"><span class="lbl">📸 Fotos:</span> @estudio_fotoinfantil</a>
+    <a href="https://wa.me/5491130448139" target="_blank" rel="noopener"><span class="lbl">💬 WhatsApp:</span> +54 9 11 3044-8139</a>
+    <a href="https://instagram.com/Novainvite.co" target="_blank" rel="noopener"><span class="lbl">🎪 Invitación digital:</span> @Novainvite.co</a>
+  </div>
+</footer>
+
+<!-- ============================================================
+     JS
+     ============================================================ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+/* ============================================================
+   CONFIG — editá acá para personalizar (fecha real, fotos, etc.)
+   ============================================================ */
+const CONFIG = {
+  // ⚠️ FECHA PLACEHOLDER — reemplazar por la fecha real del cumpleaños de Valentina
+  fechaEvento: "2026-09-19T17:00:00-03:00",
+  fechaTextoCorto: "📅 Sáb 19 de sept · 17 hs",
+  fechaTextoDetalle: "Sábado 19 de septiembre de 2026",
+  horaTextoDetalle: "Desde las 17 hs",
+  whatsapp: "5491130448139",
+  // Coordenadas aproximadas del centro de Gregorio de Laferrère — ajustar el pin arrastrando en Google Maps si hace falta mayor precisión
+  lat: -34.7504785,
+  lng: -58.5846362,
+  galeria: [
+    "https://i.ibb.co/LhQFRv1P/DSC0177.jpg",
+    "https://i.ibb.co/QF3D06Hm/DSC0126.jpg",
+    "https://i.ibb.co/yFmRx1bZ/DSC0159.jpg",
+    "https://i.ibb.co/1GQ8DrsD/DSC0197.jpg"
+  ]
+};
+
+document.getElementById('chip-fecha').textContent = CONFIG.fechaTextoCorto;
+document.getElementById('det-fecha').textContent = CONFIG.fechaTextoDetalle;
+document.getElementById('det-hora').textContent = CONFIG.horaTextoDetalle;
+
+/* ---------- Intro: abrir carpa + audio ---------- */
+const intro = document.getElementById('intro');
+const audio = document.getElementById('audio-fondo');
+const audioToggle = document.getElementById('audio-toggle');
+let audioOn = false;
+document.getElementById('btn-abrir').addEventListener('click', () => {
+  intro.classList.add('abierta');
+  document.getElementById('hero').classList.add('on');
+  if (audio.querySelector('source').getAttribute('src')) {
+    audio.play().then(() => { audioOn = true; audioToggle.textContent = '🔊'; }).catch(() => {});
+  }
+  setTimeout(() => { intro.style.display = 'none'; }, 1200);
+});
+audioToggle.addEventListener('click', () => {
+  if (!audio.querySelector('source').getAttribute('src')) return;
+  if (audioOn) { audio.pause(); audioOn = false; audioToggle.textContent = '🔇'; }
+  else { audio.play().catch(()=>{}); audioOn = true; audioToggle.textContent = '🔊'; }
+});
+if (!audio.querySelector('source').getAttribute('src')) { audioToggle.style.display = 'none'; }
+
+/* ---------- Countdown ---------- */
+const target = new Date(CONFIG.fechaEvento).getTime();
+function tickCountdown(){
+  const now = Date.now();
+  const diff = target - now;
+  if (diff <= 0){
+    document.getElementById('countdown').querySelector('.cd-grid').style.display = 'none';
+    document.getElementById('cd-finish').style.display = 'block';
+    clearInterval(cdInterval);
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('cd-d').textContent = String(d).padStart(2,'0');
+  document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+  document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+  document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+}
+tickCountdown();
+const cdInterval = setInterval(tickCountdown, 1000);
+
+/* ---------- Galería + Lightbox ---------- */
+const grid = document.getElementById('galeria-grid');
+CONFIG.galeria.forEach((src, i) => {
+  const a = document.createElement('a');
+  a.href = '#'; a.dataset.index = i;
+  a.innerHTML = `<img src="${src}" alt="Foto de Valentina ${i+1}" loading="lazy" decoding="async" onload="this.classList.add('cargada')">`;
+  grid.appendChild(a);
+});
+const lightbox = document.getElementById('lightbox');
+const lbImg = document.getElementById('lb-img');
+const lbCount = document.getElementById('lb-count');
+let lbIndex = 0;
+function abrirLightbox(i){
+  lbIndex = i;
+  lbImg.src = CONFIG.galeria[lbIndex];
+  lbCount.textContent = (lbIndex+1) + ' / ' + CONFIG.galeria.length;
+  lightbox.classList.add('on');
+}
+grid.addEventListener('click', e => {
+  const a = e.target.closest('a');
+  if (!a) return;
+  e.preventDefault();
+  abrirLightbox(parseInt(a.dataset.index,10));
+});
+document.getElementById('lb-close').addEventListener('click', () => lightbox.classList.remove('on'));
+document.getElementById('lb-prev').addEventListener('click', () => abrirLightbox((lbIndex-1+CONFIG.galeria.length)%CONFIG.galeria.length));
+document.getElementById('lb-next').addEventListener('click', () => abrirLightbox((lbIndex+1)%CONFIG.galeria.length));
+let touchX = null;
+lightbox.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+lightbox.addEventListener('touchend', e => {
+  if (touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) > 40){
+    if (dx < 0) abrirLightbox((lbIndex+1)%CONFIG.galeria.length);
+    else abrirLightbox((lbIndex-1+CONFIG.galeria.length)%CONFIG.galeria.length);
+  }
+  touchX = null;
+});
+
+/* ---------- Mapa ---------- */
+const map = L.map('mapa', {zoomControl:false, attributionControl:false, dragging:true, scrollWheelZoom:false})
+  .setView([CONFIG.lat, CONFIG.lng], 15);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+const iconoCirco = L.divIcon({
+  html: '<div style="font-size:30px; transform:translateY(-6px);">🎪</div>',
+  className: '', iconSize:[30,30], iconAnchor:[15,24]
+});
+L.marker([CONFIG.lat, CONFIG.lng], {icon: iconoCirco}).addTo(map);
+
+document.getElementById('lnk-google').href = `https://www.google.com/maps/dir/?api=1&destination=${CONFIG.lat},${CONFIG.lng}`;
+document.getElementById('lnk-waze').href = `https://waze.com/ul?ll=${CONFIG.lat},${CONFIG.lng}&navigate=yes`;
+document.getElementById('lnk-apple').href = `https://maps.apple.com/?daddr=${CONFIG.lat},${CONFIG.lng}`;
+
+/* ---------- RSVP: steppers + WhatsApp ---------- */
+document.querySelectorAll('.stepper button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const t = document.getElementById(btn.dataset.target);
+    let val = parseInt(t.textContent, 10);
+    const min = btn.dataset.target === 'adultos' ? 1 : 0;
+    if (btn.dataset.op === '+' ) val = Math.min(val+1, 20);
+    else val = Math.max(val-1, min);
+    t.textContent = val;
+  });
+});
+
+function lanzarConfeti(){
+  const colores = ['#E7527A','#E8B84B','#F6D98C','#3E2361','#FFF3E6'];
+  for (let i=0;i<40;i++){
+    const c = document.createElement('div');
+    c.className='confeti';
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.width = c.style.height = (5+Math.random()*6)+'px';
+    c.style.background = colores[Math.floor(Math.random()*colores.length)];
+    c.style.animationDuration = (2.2+Math.random()*1.6)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 4000);
+  }
+}
+
+document.getElementById('btn-confirmar').addEventListener('click', () => {
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const adultos = document.getElementById('adultos').textContent;
+  const ninos = document.getElementById('ninos').textContent;
+  const msg = document.getElementById('f-msg').value.trim();
+  if (!nombre){
+    document.getElementById('f-nombre').focus();
+    document.getElementById('f-nombre').style.outline = '3px solid #E7527A';
+    return;
+  }
+  let texto = `¡Hola! Soy ${nombre} y confirmo mi asistencia al primer añito de Valentina 🎪 Vamos ${adultos} adulto(s)`;
+  if (parseInt(ninos,10) > 0) texto += ` y ${ninos} niño(s)`;
+  texto += '.';
+  if (msg) texto += ` Mensaje: ${msg}`;
+  window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(texto)}`, '_blank');
+  document.getElementById('rsvp-ok').style.display = 'block';
+  lanzarConfeti();
+});
+
+/* ---------- Reveal on scroll ---------- */
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
+}, {threshold:.15});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+
+<!-- ══ SUBÍ TUS FOTOS Y VIDEOS — lógica del widget ══ -->
+<script>
+(function(){
+  var widget = document.getElementById('fotoWidget');
+  if(!widget) return;
+  var eventId   = widget.dataset.eventId;
+  var scriptUrl = widget.dataset.scriptUrl;
+
+  var fileInput    = document.getElementById('fw-file-input');
+  var previewWrap  = document.getElementById('fw-preview-wrap');
+  var previewGrid  = document.getElementById('fw-preview-grid');
+  var submitBtn    = document.getElementById('fw-submit-btn');
+  var uploadText   = document.getElementById('fw-upload-text');
+  var guestName    = document.getElementById('fw-guest-name');
+  var formBlock    = document.getElementById('fw-form');
+  var statusBlock  = document.getElementById('fw-status');
+  var statusIcon   = document.getElementById('fw-status-icon');
+  var statusMsg    = document.getElementById('fw-status-msg');
+
+  var MAX_FOTOS = 10;
+  var MAX_MB = 30; // tope por archivo — pensado para que un video no rompa la subida
+  var fotosListas = []; // array de {dataUrl, mimeType}, tal como llegó del celular, sin recomprimir
+
+  // Lee el archivo tal cual (sin redimensionar ni recodificar), para que a
+  // Drive llegue la calidad real de la cámara. La galería en vivo sigue
+  // siendo liviana porque Drive genera sus propias miniaturas al mostrarlas,
+  // sin importar el tamaño del archivo guardado.
+  function leerOriginal(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        resolve({ dataUrl: e.target.result, mimeType: file.type || 'image/jpeg' });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function actualizarBotonSubir(){
+    if (!fotosListas.length) {
+      submitBtn.style.display = 'none';
+      return;
+    }
+    submitBtn.style.display = 'flex';
+    submitBtn.textContent = fotosListas.length === 1 ? '🎪  Subir' : '🎪  Subir ' + fotosListas.length + ' archivos';
+  }
+
+  function renderPreview(){
+    previewGrid.innerHTML = '';
+    previewWrap.style.display = fotosListas.length ? 'block' : 'none';
+
+    fotosListas.forEach(function(item, idx){
+      var el = document.createElement('div');
+      el.className = 'fw-preview-item';
+
+      var esVideo = item.mimeType.indexOf('video/') === 0;
+
+      if (esVideo) {
+        var video = document.createElement('video');
+        video.src = item.dataUrl;
+        video.controls = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.preload = 'metadata';
+        el.appendChild(video);
+
+        var badge = document.createElement('span');
+        badge.className = 'fw-video-badge';
+        badge.textContent = 'video';
+        el.appendChild(badge);
+      } else {
+        var img = document.createElement('img');
+        img.src = item.dataUrl;
+        img.alt = 'Vista previa';
+        el.appendChild(img);
+      }
+
+      var quitar = document.createElement('button');
+      quitar.type = 'button';
+      quitar.className = 'fw-preview-remove';
+      quitar.textContent = '×';
+      quitar.setAttribute('aria-label', 'Quitar este archivo');
+      quitar.addEventListener('click', function(){
+        fotosListas.splice(idx, 1);
+        renderPreview();
+        actualizarBotonSubir();
+        if (!fotosListas.length) uploadText.textContent = '🎪  Elegir fotos o videos';
+      });
+      el.appendChild(quitar);
+
+      previewGrid.appendChild(el);
+    });
+  }
+
+  fileInput.addEventListener('change', function(){
+    var files = Array.prototype.slice.call(fileInput.files || []);
+    if (!files.length) return;
+
+    if (files.length > MAX_FOTOS) {
+      files = files.slice(0, MAX_FOTOS);
+    }
+
+    var pesados = files.filter(function(f){ return f.size > MAX_MB * 1024 * 1024; });
+    files = files.filter(function(f){ return f.size <= MAX_MB * 1024 * 1024; });
+
+    if (!files.length) {
+      uploadText.textContent = '🎪  Elegir fotos o videos';
+      statusIcon.textContent = '⚠️';
+      statusMsg.textContent = 'Ese archivo pesa mucho (máx ' + MAX_MB + 'MB). Probá con un video más corto.';
+      formBlock.style.display = 'none';
+      statusBlock.classList.add('show');
+      return;
+    }
+
+    uploadText.textContent = 'Preparando...';
+
+    Promise.all(files.map(leerOriginal))
+      .then(function(items){
+        fotosListas = items;
+        renderPreview();
+        actualizarBotonSubir();
+        uploadText.textContent = pesados.length
+          ? '🎪  Se excluyó 1 archivo muy pesado'
+          : '🎪  Cambiar selección';
+      })
+      .catch(function(){
+        uploadText.textContent = '🎪  Elegir fotos o videos';
+      });
+  });
+
+  function subirUna(item){
+    return fetch(scriptUrl, {
+      method: 'POST',
+      // text/plain evita que el navegador bloquee el pedido por CORS
+      // (Apps Script no responde bien al "preflight" de application/json)
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        eventId: eventId,
+        guestName: guestName.value || 'invitado',
+        image: item.dataUrl,
+        mimeType: item.mimeType
+      })
+    });
+  }
+
+  submitBtn.addEventListener('click', function(){
+    if (!fotosListas.length) return;
+
+    var lista = fotosListas.slice();
+    var total = lista.length;
+    var exitosas = 0;
+    var i = 0;
+
+    fotosListas = [];
+    previewGrid.innerHTML = '';
+    previewWrap.style.display = 'none';
+    submitBtn.disabled = true;
+
+    function subirSiguiente(){
+      if (i >= total) {
+        submitBtn.disabled = false;
+        submitBtn.style.display = 'none';
+        uploadText.textContent = '🎪  Elegir otra tanda';
+
+        statusIcon.textContent = exitosas === total ? '🎪' : '⚠️';
+        statusMsg.textContent = exitosas === total
+          ? (total === 1 ? '¡Gracias por compartirlo!' : '¡Gracias! Subimos tus ' + exitosas + ' archivos 🎉')
+          : 'Subimos ' + exitosas + ' de ' + total + '. Probá de nuevo con el resto.';
+        formBlock.style.display = 'none';
+        statusBlock.classList.add('show');
+        return;
+      }
+
+      submitBtn.textContent = 'Subiendo ' + (i + 1) + ' de ' + total + '...';
+
+      subirUna(lista[i])
+        .then(function(){ exitosas++; })
+        .catch(function(){ /* sigue con la próxima aunque esta falle */ })
+        .finally(function(){ i++; subirSiguiente(); });
+    }
+
+    subirSiguiente();
+  });
+
+  // ══ GALERÍA EN VIVO ══
+  // Cada 8s pregunta al backend qué fotos hay para este evento y agrega
+  // al principio de la grilla solo las que todavía no se mostraron.
+  var liveGrid  = document.getElementById('fw-live-grid');
+  var liveEmpty = document.getElementById('fw-live-empty');
+  var vistas = {};
+
+  function cargarGaleriaEnVivo(){
+    fetch(scriptUrl + '?action=list&eventId=' + encodeURIComponent(eventId))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data.ok || !data.fotos) return;
+
+        liveEmpty.style.display = data.fotos.length ? 'none' : 'block';
+
+        data.fotos.forEach(function(foto){
+          if (vistas[foto.id]) return;
+          vistas[foto.id] = true;
+
+          var esVideo = (foto.tipo || '').indexOf('video/') === 0;
+
+          var item = document.createElement('div');
+          item.className = 'fw-grid-item';
+
+          var img = document.createElement('img');
+          img.loading = 'lazy';
+          img.alt = esVideo ? 'Video compartido por un invitado' : 'Foto compartida por un invitado';
+          img.src = 'https://drive.google.com/thumbnail?id=' + foto.id + '&sz=w400';
+          item.appendChild(img);
+
+          if (esVideo) {
+            var play = document.createElement('span');
+            play.className = 'fw-play-badge';
+            play.textContent = '▶';
+            item.appendChild(play);
+
+            img.addEventListener('click', function(){
+              window.open('https://drive.google.com/file/d/' + foto.id + '/view', '_blank');
+            });
+          } else {
+            img.addEventListener('click', function(){
+              lbImg.src = 'https://drive.google.com/thumbnail?id=' + foto.id + '&sz=w1200';
+              lbCount.textContent = 'Compartida por un invitado';
+              lightbox.classList.add('on');
+            });
+          }
+
+          liveGrid.prepend(item);
+        });
+      })
+      .catch(function(){ /* si falla, reintenta solo en el próximo ciclo */ });
+  }
+
+  if (liveGrid) {
+    cargarGaleriaEnVivo();
+    setInterval(cargarGaleriaEnVivo, 8000);
+  }
+})();
+</script>
+</body>
+</html>
