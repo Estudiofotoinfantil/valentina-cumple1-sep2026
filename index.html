@@ -893,7 +893,12 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
         image: item.dataUrl,
         mimeType: item.mimeType
       })
-    });
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data.ok) throw new Error(data.error || 'Error desconocido del servidor');
+        return data;
+      });
   }
 
   submitBtn.addEventListener('click', function(){
@@ -909,6 +914,8 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     previewWrap.style.display = 'none';
     submitBtn.disabled = true;
 
+    var ultimoError = '';
+
     function subirSiguiente(){
       if (i >= total) {
         submitBtn.disabled = false;
@@ -918,7 +925,9 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
         statusIcon.textContent = exitosas === total ? '🎪' : '⚠️';
         statusMsg.textContent = exitosas === total
           ? (total === 1 ? '¡Gracias por compartirlo!' : '¡Gracias! Subimos tus ' + exitosas + ' archivos 🎉')
-          : 'Subimos ' + exitosas + ' de ' + total + '. Probá de nuevo con el resto.';
+          : (exitosas === 0
+              ? 'No se pudo subir. ' + (ultimoError || 'Probá de nuevo.')
+              : 'Subimos ' + exitosas + ' de ' + total + '. Probá de nuevo con el resto.');
         formBlock.style.display = 'none';
         statusBlock.classList.add('show');
         return;
@@ -928,7 +937,7 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
       subirUna(lista[i])
         .then(function(){ exitosas++; })
-        .catch(function(){ /* sigue con la próxima aunque esta falle */ })
+        .catch(function(err){ ultimoError = err && err.message ? err.message : ''; })
         .finally(function(){ i++; subirSiguiente(); });
     }
 
