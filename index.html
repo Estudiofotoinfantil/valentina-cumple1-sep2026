@@ -195,6 +195,8 @@ h2.titulo-sec{ font-size:1.9rem; margin-bottom:6px; }
 }
 #lightbox.on{display:flex;}
 #lightbox img{ max-width:92vw; max-height:72vh; border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.6); touch-action:pan-y;}
+#lb-video{ width:92vw; max-width:460px; aspect-ratio:16/9; border:none; border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.6); display:none;}
+#lb-video-fallback{ display:none; color:var(--dorado-2); font-size:.78rem; font-weight:700; margin-top:10px; text-decoration:underline; }
 .lb-close{ position:absolute; top:18px; right:18px; background:var(--dorado); color:var(--noche); width:38px; height:38px; border-radius:50%; font-size:1.1rem; font-weight:700;}
 .lb-nav{ display:flex; gap:40px; margin-top:20px; }
 .lb-nav button{ background:none; color:var(--dorado-2); font-size:2rem; }
@@ -419,6 +421,8 @@ footer .creditos a span.lbl{ opacity:.55; font-weight:600; }
 <div id="lightbox">
   <button class="lb-close" id="lb-close" aria-label="Cerrar">✕</button>
   <img id="lb-img" src="" alt="">
+  <iframe id="lb-video" src="" title="Video compartido" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  <a id="lb-video-fallback" href="#" target="_blank" rel="noopener">Abrir en Drive ↗</a>
   <div class="lb-nav">
     <button id="lb-prev" aria-label="Anterior">‹</button>
     <button id="lb-next" aria-label="Siguiente">›</button>
@@ -656,31 +660,85 @@ CONFIG.galeria.forEach((src, i) => {
 });
 const lightbox = document.getElementById('lightbox');
 const lbImg = document.getElementById('lb-img');
+const lbVideo = document.getElementById('lb-video');
+const lbFallback = document.getElementById('lb-video-fallback');
 const lbCount = document.getElementById('lb-count');
-let lbIndex = 0;
-function abrirLightbox(i){
-  lbIndex = i;
-  lbImg.src = CONFIG.galeria[lbIndex];
-  lbCount.textContent = (lbIndex+1) + ' / ' + CONFIG.galeria.length;
+
+// El visor tiene dos "modos": la galería curada del CONFIG, o la galería
+// en vivo de fotos/videos que van subiendo los invitados. Cada modo navega
+// su propia lista al deslizar, para que nunca se mezclen entre sí.
+let lbModo = 'galeria'; // 'galeria' | 'vivo'
+let lbIndex = 0;        // índice dentro de CONFIG.galeria
+let liveItems = [];     // {id, tipo} de lo compartido en vivo, más nuevo primero
+let liveIndex = 0;      // índice dentro de liveItems
+
+function mostrarEnLightbox(src, esVideo, caption, driveViewUrl){
+  if (esVideo){
+    lbImg.style.display = 'none';
+    lbVideo.style.display = 'block';
+    lbVideo.src = src;
+    lbFallback.style.display = 'inline-block';
+    lbFallback.href = driveViewUrl || '#';
+  } else {
+    lbVideo.style.display = 'none';
+    lbVideo.src = '';
+    lbFallback.style.display = 'none';
+    lbImg.style.display = 'block';
+    lbImg.src = src;
+  }
+  lbCount.textContent = caption;
   lightbox.classList.add('on');
 }
+
+function abrirLightbox(i){
+  lbModo = 'galeria';
+  lbIndex = i;
+  mostrarEnLightbox(CONFIG.galeria[lbIndex], false, (lbIndex+1) + ' / ' + CONFIG.galeria.length);
+}
+
+function abrirLightboxVivo(i){
+  const item = liveItems[i];
+  if (!item) return;
+  lbModo = 'vivo';
+  liveIndex = i;
+  const esVideo = (item.tipo || '').indexOf('video/') === 0;
+  const caption = 'Compartido por un invitado · ' + (liveIndex+1) + ' / ' + liveItems.length;
+  if (esVideo){
+    mostrarEnLightbox('https://drive.google.com/file/d/' + item.id + '/preview', true, caption, 'https://drive.google.com/file/d/' + item.id + '/view');
+  } else {
+    mostrarEnLightbox('https://drive.google.com/thumbnail?id=' + item.id + '&sz=w1200', false, caption);
+  }
+}
+function siguienteLive(){ if (liveItems.length) abrirLightboxVivo((liveIndex+1) % liveItems.length); }
+function anteriorLive(){ if (liveItems.length) abrirLightboxVivo((liveIndex-1+liveItems.length) % liveItems.length); }
+
 grid.addEventListener('click', e => {
   const a = e.target.closest('a');
   if (!a) return;
   e.preventDefault();
   abrirLightbox(parseInt(a.dataset.index,10));
 });
-document.getElementById('lb-close').addEventListener('click', () => lightbox.classList.remove('on'));
-document.getElementById('lb-prev').addEventListener('click', () => abrirLightbox((lbIndex-1+CONFIG.galeria.length)%CONFIG.galeria.length));
-document.getElementById('lb-next').addEventListener('click', () => abrirLightbox((lbIndex+1)%CONFIG.galeria.length));
+document.getElementById('lb-close').addEventListener('click', () => { lightbox.classList.remove('on'); lbVideo.src = ''; });
+document.getElementById('lb-prev').addEventListener('click', () => {
+  if (lbModo === 'vivo') anteriorLive();
+  else abrirLightbox((lbIndex-1+CONFIG.galeria.length)%CONFIG.galeria.length);
+});
+document.getElementById('lb-next').addEventListener('click', () => {
+  if (lbModo === 'vivo') siguienteLive();
+  else abrirLightbox((lbIndex+1)%CONFIG.galeria.length);
+});
 let touchX = null;
 lightbox.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
 lightbox.addEventListener('touchend', e => {
   if (touchX === null) return;
   const dx = e.changedTouches[0].clientX - touchX;
   if (Math.abs(dx) > 40){
-    if (dx < 0) abrirLightbox((lbIndex+1)%CONFIG.galeria.length);
-    else abrirLightbox((lbIndex-1+CONFIG.galeria.length)%CONFIG.galeria.length);
+    if (lbModo === 'vivo'){
+      if (dx < 0) siguienteLive(); else anteriorLive();
+    } else {
+      if (dx < 0) abrirLightbox((lbIndex+1)%CONFIG.galeria.length);
+      else abrirLightbox((lbIndex-1+CONFIG.galeria.length)%CONFIG.galeria.length);
+    }
   }
   touchX = null;
 });
@@ -963,7 +1021,10 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
           if (vistas[foto.id]) return;
           vistas[foto.id] = true;
 
-          var esVideo = (foto.tipo || '').indexOf('video/') === 0;
+          var itemData = { id: foto.id, tipo: foto.tipo || '' };
+          liveItems.unshift(itemData); // más nueva primero, mismo orden que el grid visual
+
+          var esVideo = itemData.tipo.indexOf('video/') === 0;
 
           var item = document.createElement('div');
           item.className = 'fw-grid-item';
@@ -979,17 +1040,12 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
             play.className = 'fw-play-badge';
             play.textContent = '▶';
             item.appendChild(play);
-
-            img.addEventListener('click', function(){
-              window.open('https://drive.google.com/file/d/' + foto.id + '/view', '_blank');
-            });
-          } else {
-            img.addEventListener('click', function(){
-              lbImg.src = 'https://drive.google.com/thumbnail?id=' + foto.id + '&sz=w1200';
-              lbCount.textContent = 'Compartida por un invitado';
-              lightbox.classList.add('on');
-            });
           }
+
+          img.addEventListener('click', function(){
+            var idx = liveItems.indexOf(itemData);
+            if (idx > -1) abrirLightboxVivo(idx);
+          });
 
           liveGrid.prepend(item);
         });
